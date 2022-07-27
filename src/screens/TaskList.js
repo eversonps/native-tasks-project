@@ -1,6 +1,6 @@
 import React, { useEffect, useState} from "react";
 
-import { View, Text, ImageBackground, StyleSheet, FlatList, TouchableOpacity, Platform } from "react-native";
+import { View, Text, ImageBackground, StyleSheet, FlatList, TouchableOpacity, Platform, Alert } from "react-native";
 
 import todayImage from '../assets/imgs/today.jpg'
 
@@ -12,6 +12,7 @@ import Task from "../components/Task";
 
 import AddTask from "./AddTask";
 import Icon from "react-native-vector-icons/FontAwesome";
+import { add } from "react-native-reanimated";
 export default function TaskList(){
     const [visibleTasks, setVisibleTasks] = useState([])
     const [showModalAddTask, setShowModalAddTask] = useState(false)
@@ -68,6 +69,26 @@ export default function TaskList(){
         setShowModalAddTask(false)
     }
 
+    function addTask(newTask){
+        if(!newTask.desc || !newTask.desc.trim()){
+            Alert.alert('Dados Inválidos', 'Descrição não informada!')
+            return
+        }
+
+       let tasksAux = [...tasks.tasks]
+
+        tasksAux.push({
+            id: Math.random(),
+            desc: newTask.desc,
+            estimateAt: newTask.date,
+            doneAt: null
+        })
+
+        setTasks({...tasks, tasks: tasksAux})
+        setShowModalAddTask(false)
+        filterTasks()
+    }   
+
     useEffect(() =>{
         filterTasks()
     }, [tasks])
@@ -75,7 +96,7 @@ export default function TaskList(){
     const today = moment().locale('pt-br').format('ddd, d [de] MMMM')
     return (
         <View style={styles.container}>
-            <AddTask isVisible={showModalAddTask} onCancel={onCancel}/>
+            <AddTask isVisible={showModalAddTask} onCancel={onCancel} onSave={addTask}/>
             <ImageBackground source={todayImage} style={styles.background}>
                 <View style={styles.iconBar}>
                     <View style={styles.iconBar}>
