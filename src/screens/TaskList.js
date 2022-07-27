@@ -10,9 +10,12 @@ import commonStyles from "../commonStyles";
 
 import Task from "../components/Task";
 
+import AddTask from "./AddTask";
 import Icon from "react-native-vector-icons/FontAwesome";
 export default function TaskList(){
     const [visibleTasks, setVisibleTasks] = useState([])
+    const [showModalAddTask, setShowModalAddTask] = useState(false)
+
     const [tasks, setTasks] = useState({
         showDoneTasks: true,
         tasks: [
@@ -61,6 +64,10 @@ export default function TaskList(){
         filterTasks()
     }
 
+    function onCancel(){
+        setShowModalAddTask(false)
+    }
+
     useEffect(() =>{
         filterTasks()
     }, [tasks])
@@ -68,6 +75,7 @@ export default function TaskList(){
     const today = moment().locale('pt-br').format('ddd, d [de] MMMM')
     return (
         <View style={styles.container}>
+            <AddTask isVisible={showModalAddTask} onCancel={onCancel}/>
             <ImageBackground source={todayImage} style={styles.background}>
                 <View style={styles.iconBar}>
                     <View style={styles.iconBar}>
@@ -86,6 +94,9 @@ export default function TaskList(){
                 <FlatList data={visibleTasks} keyExtractor={item => `${item.id}`} renderItem={({item}) => <Task {...item} toogleTask={toogleTask}/>} />
             </View>
            
+           <TouchableOpacity style={styles.addButton} onPress={() => setShowModalAddTask(true)} activeOpacity={0.7}>
+                <Icon name="plus" size={20} color={commonStyles.colors.secondary}/>
+           </TouchableOpacity>
         </View>
     )
 }
@@ -123,5 +134,16 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
         justifyContent: 'flex-end',
         marginTop: 20
+    },
+    addButton: {
+        position: 'absolute',
+        right: 30,
+        bottom: 30,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: commonStyles.colors.today,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 })
