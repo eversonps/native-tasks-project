@@ -1,19 +1,46 @@
 import React, { useState } from "react";
 
-import { Modal, View, StyleSheet, TouchableWithoutFeedback, Text, TouchableOpacity, TextInput } from "react-native";
+import { Modal, View, StyleSheet, TouchableWithoutFeedback, Text, TouchableOpacity, TextInput, Platform } from "react-native";
 
 import commonStyles from "../commonStyles";
 
-export default function AddTask({isVisible, onCancel}){
+import DateTimePicker from "@react-native-community/datetimepicker";
+import moment from "moment";
 
+export default function AddTask({isVisible, onCancel}){
     const initialState = {
-        desc: ''
+        desc: '',
+        date: new Date(),
+        showDatePicker: false
     }
 
     const [state, setState] = useState(initialState)
 
+    function getDateTimePicker(){
+        let datePicker = <DateTimePicker value={state.date} onChange={(_, date) => setState({ ...state, date, showDatePicker: false })}/>
+
+        const dateString = moment(state.date).format('ddd, D [de] MMMM [de] YYYY')
+
+        if(Platform.OS === 'android'){
+            datePicker = (
+                datePicker = (
+                    <View>
+                        <TouchableOpacity onPress={() => setState({ ...state, showDatePicker: true })}>
+                            <Text style={styles.date}>
+                                {dateString}
+                            </Text>
+                        </TouchableOpacity>
+                        {state.showDatePicker && datePicker}
+                    </View>
+                )
+            )
+        }
+
+        return datePicker
+    }
+
     return (
-        <Modal transparent={true} visible={isVisible} onRequestClose={onCancel} animationType='slide'>
+        <Modal transparent={true} visible={isVisible} onRequestClose={onCancel} animationType='slide' mode='date'>
             <TouchableWithoutFeedback onPress={onCancel}>
                 <View style={styles.background}></View>
             </TouchableWithoutFeedback>
@@ -21,6 +48,7 @@ export default function AddTask({isVisible, onCancel}){
             <View style={styles.container}>
                 <Text style={styles.header}>Nova Tarefa</Text>
                 <TextInput style={styles.input} value={state.desc} placeholder='Informe a Descrição' onChangeText={desc => setState({...state, desc})}/>
+                { getDateTimePicker() }
                 <View style={styles.buttons}>
                     <TouchableOpacity onPress={onCancel}>
                         <Text style={styles.button}>Cancelar</Text>
@@ -72,5 +100,10 @@ const styles = StyleSheet.create({
         margin: 20,
         marginRight: 30,
         color: commonStyles.colors.today
+    }, 
+    date: {
+        fontFamily: commonStyles.fontFamily,
+        fontSize: 20,
+        marginLeft: 15
     }
 })
