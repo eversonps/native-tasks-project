@@ -3,24 +3,74 @@ import React, { useState } from "react";
 import { View, ImageBackground, Text, StyleSheet, TextInput, TouchableOpacity, Alert} from "react-native";;
 import backgroundImage from '../assets/imgs/login.jpg'
 
+import AuthInput from "../components/AuthInput";
 import commomStyle from '../commonStyles'
-export default function Auth(){
+
+import { server, showSuccess, showError } from "../common";
+import axios from "axios";
+
+export default function Auth({navigation}){
     const [stageNew, setStageNew] = useState(false)
 
-    const [user, setUser] = useState({
+    const initalState = {
         name: '',
         email: '',
         password: '',
         confirmPassword: ''
-    })
+    }
+
+    const [user, setUser] = useState(initalState)
 
     function signinOrSignup(){
         if(stageNew){
-            Alert.alert('Sucesso!, Criar conta')
+            signup()
         }else{
-            Alert('Sucesso!', 'Logar')
+            signin()
         }
     }
+
+    async function signup(){
+        try{
+            await axios.post(`${server}/signup`, {
+                name: user.name,
+                email: user.email,
+                password: user.password,
+                confirmPassword: user.confirmPassword
+            })
+
+            showSuccess('Usuario cadastrado!')
+            setStageNew(false)
+            setUser({...initalState})
+        }catch(e){
+            showError(e)
+        }
+    }
+
+    async function signin(){
+        try{
+            const res = await axios.post(`${server}/signin`, {
+                email: user.email,
+                password: user.password,
+            })
+
+            axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`
+            navigation.navigate('Home')
+        }catch(e){
+            showError(e)
+        }
+    }
+
+    const validations = []
+    validations.push(user.email && user.email.includes('@'))
+    validations.push(user.password && user.email.length >= 6)
+
+    if(stageNew){
+        validations.push(user.name && user.name.trim().length >= 3)
+        validations.push(user.confirmPassword)
+        validations.push(user.password === user.confirmPassword)
+    }
+
+    const validForm = validations.reduce((t, a) => t && a)
 
     return (
         <ImageBackground source={backgroundImage} style={styles.backgroundImage}>
@@ -28,16 +78,16 @@ export default function Auth(){
             <View style={styles.formContainer}>
                 <Text style={styles.subtitle}>{stageNew ? 'Crie a sua conta' : 'Informe seus dados'}</Text>
                 {
-                    stageNew && <TextInput placeholder="Nome" value={user.name} style={styles.input} onChangeText={name => setUser({...user, name})}/>
+                    stageNew && <AuthInput icon='user' placeholder="Nome" value={user.name} style={styles.input} onChangeText={name => setUser({...user, name})}/>
                 }
-                <TextInput placeholder="E-mail" value={user.email} onChangeText={(email => setUser(...user, email))} style={styles.input}/>
-                <TextInput placeholder="Senha" value={user.password} onChangeText={(password => setUser(...user, password))} style={styles.input}/>
+                <AuthInput icon='at' placeholder="E-mail" value={user.email} onChangeText={email => setUser({...user, email})} style={styles.input}/>
+                <AuthInput icon='lock' placeholder="Senha" value={user.password} onChangeText={password => setUser({...user, password})} style={styles.input}/>
                 {
-                    stageNew && <TextInput placeholder="Confirmação de Senha" value={user.confirmPassword} style={styles.input} onChangeText={confirmPassword => setUser({...user, confirmPassword})}/>
+                    stageNew && <AuthInput icon='asterisk' placeholder="Confirmação de Senha" value={user.confirmPassword} style={styles.input} onChangeText={confirmPassword => setUser({...user, confirmPassword})}/>
                 }
                
-                <TouchableOpacity onPress={signinOrSignup}>
-                    <View style={styles.button}>
+                <TouchableOpacity onPress={signinOrSignup} disabled={!validForm}>
+                    <View style={[styles.button, validForm ? {} : { backgroundColor: '#AAA' }]}>
                         <Text style={styles.buttonText}>{stageNew ? 'Registrar' : 'Entrar'}</Text>
                     </View>
                 </TouchableOpacity>
