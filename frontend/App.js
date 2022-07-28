@@ -7,6 +7,7 @@
  */
 
 import React, { useEffect } from 'react';
+import Auth from './src/screens/Auth';
 
 import {
   SafeAreaView,
