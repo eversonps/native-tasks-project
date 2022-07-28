@@ -69,6 +69,13 @@ export default function TaskList(){
         setShowModalAddTask(false)
     }
 
+    function deleteTask(id){
+        const tasksAux = tasks.tasks.filter(task => task.id !== id)
+
+        setTasks({...tasks, tasks: tasksAux})
+        filterTasks()
+    }
+
     function addTask(newTask){
         if(!newTask.desc || !newTask.desc.trim()){
             Alert.alert('Dados Inválidos', 'Descrição não informada!')
@@ -112,7 +119,7 @@ export default function TaskList(){
             </ImageBackground>
 
             <View style={styles.taskList}>
-                <FlatList data={visibleTasks} keyExtractor={item => `${item.id}`} renderItem={({item}) => <Task {...item} toogleTask={toogleTask}/>} />
+                <FlatList data={visibleTasks} keyExtractor={item => `${item.id}`} renderItem={({item}) => <Task {...item} toogleTask={toogleTask} onDelete={deleteTask}/>} />
             </View>
            
            <TouchableOpacity style={styles.addButton} onPress={() => setShowModalAddTask(true)} activeOpacity={0.7}>
